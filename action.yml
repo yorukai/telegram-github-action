@@ -1,6 +1,6 @@
 name: "Telegram Topic Notify"
 description: "Send Telegram notifications to groups and forum topics with message_thread_id support"
-author: "Salmansha08"
+author: "yorukai"
 
 inputs:
   to:
@@ -35,6 +35,13 @@ inputs:
     description: "Send message silently without notification sound"
     required: false
     default: "false"
+  delete_message_id:
+    description: "ID of a previously sent message (e.g. from a prior step's message_id output) to delete after the new message is sent"
+    required: false
+
+outputs:
+  message_id:
+    description: "ID of the text message that was sent"
 
 runs:
   using: "docker"

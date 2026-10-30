@@ -66,7 +66,28 @@ EOF
     exit 1
   fi
 
-  echo "Message sent successfully!"
+  MESSAGE_ID=$(echo "$RESPONSE" | jq -r '.result.message_id')
+  echo "Message sent successfully! (message_id: ${MESSAGE_ID})"
+
+  if [ -n "${GITHUB_OUTPUT:-}" ]; then
+    echo "message_id=${MESSAGE_ID}" >> "${GITHUB_OUTPUT}"
+  fi
+}
+
+# Function to delete a previously sent message (failures are non-fatal)
+delete_message() {
+  local chat_id="$1"
+  local message_id="$2"
+
+  RESPONSE=$(curl -s -X POST "${TELEGRAM_API}/deleteMessage" \
+    --data-urlencode "chat_id=${chat_id}" \
+    --data-urlencode "message_id=${message_id}")
+
+  if [ "$(echo "$RESPONSE" | jq -r '.ok')" = "true" ]; then
+    echo "🗑️ Deleted message ${message_id}"
+  else
+    echo "Warning: could not delete message ${message_id}: $(echo "$RESPONSE" | jq -r '.description // "Unknown error"')"
+  fi
 }
 
 # Function to send photo
@@ -159,6 +180,9 @@ if [ -n "${MESSAGE}" ]; then
     echo "📌 Topic/Thread ID: ${THREAD_ID}"
   fi
   send_message "${INPUT_TO}" "${MESSAGE}" "${THREAD_ID}"
+  if [ -n "${INPUT_DELETE_MESSAGE_ID:-}" ]; then
+    delete_message "${INPUT_TO}" "${INPUT_DELETE_MESSAGE_ID}"
+  fi
 fi
 
 # Send photo if provided

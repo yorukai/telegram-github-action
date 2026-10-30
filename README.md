@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send Telegram Message
-        uses: Salmansha08/telegram-github-action@main
+        uses: yorukai/telegram-github-action@main
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -41,7 +41,7 @@ For supergroups with topics enabled, you can send messages to a specific topic:
 
 ```yml
 - name: Send to CI Topic
-  uses: Salmansha08/telegram-github-action@main
+  uses: yorukai/telegram-github-action@main
   with:
     to: ${{ secrets.TELEGRAM_CHAT_ID }}
     token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -54,7 +54,7 @@ For supergroups with topics enabled, you can send messages to a specific topic:
 
 ```yml
 - name: Send Photo
-  uses: Salmansha08/telegram-github-action@main
+  uses: yorukai/telegram-github-action@main
   with:
     to: ${{ secrets.TELEGRAM_CHAT_ID }}
     token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -67,12 +67,38 @@ For supergroups with topics enabled, you can send messages to a specific topic:
 
 ```yml
 - name: Send Document
-  uses: Salmansha08/telegram-github-action@main
+  uses: yorukai/telegram-github-action@main
   with:
     to: ${{ secrets.TELEGRAM_CHAT_ID }}
     token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
     document: "./build-report.pdf"
 ```
+
+### 🔄 Replace a Previous Message
+
+The action outputs `message_id`. Pass it to `delete_message_id` in a later step to delete the old message after the new one is sent:
+
+```yml
+- name: Deployment started
+  id: started
+  uses: yorukai/telegram-github-action@main
+  with:
+    to: ${{ secrets.TELEGRAM_CHAT_ID }}
+    token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+    message: "🚀 Deployment started"
+
+# ... deploy ...
+
+- name: Deployment finished
+  uses: yorukai/telegram-github-action@main
+  with:
+    to: ${{ secrets.TELEGRAM_CHAT_ID }}
+    token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+    message: "✅ Deployment finished"
+    delete_message_id: ${{ steps.started.outputs.message_id }}
+```
+
+To share the ID across jobs, expose it via the job's `outputs`.
 
 ## 📥 Input Parameters
 
@@ -88,6 +114,9 @@ For supergroups with topics enabled, you can send messages to a specific topic:
 | `format`                   | ❌       | Message format: `markdown` or `html`                  |
 | `disable_web_page_preview` | ❌       | Disable link preview (default: `false`)               |
 | `disable_notification`     | ❌       | Send silently (default: `false`)                      |
+| `delete_message_id`        | ❌       | Message ID to delete after sending the new message    |
+
+**Outputs:** `message_id` — ID of the sent text message.
 
 ## 🔑 Getting Credentials
 
@@ -153,7 +182,7 @@ jobs:
     environment: "Telegram Github Action"  # ← Add this line
     steps:
       - name: Send Telegram Message
-        uses: Salmansha08/telegram-github-action@main
+        uses: yorukai/telegram-github-action@main
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
